@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    password: 'password'
+    url: 'jdbc:postgresql://localhost:5432/tasky'
+    username: 'tasky_adm'
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show_sql: false
+server:
+  port: 8080
+  error:
+    include-message: always
+  secret_key: "test_test_secret_key_test_test_secret_key"
+  issuer: "http://127.0.0.1:8080"
+  default-admin-password: "password"
+  default-admin-account: "adm@tasky.com"
+  allowed-origins: "*"
+  allowed-methods: GET,POST,PUT,PATCH,DELETE
