@@ -1,0 +1,20 @@
+services:
+  db:
+    container_name: postgres-tasky
+    image: postgres
+    environment:
+      POSTGRES_USER: tasky_adm
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    networks:
+      - db
+volumes:
+  postgres:
+networks:
+  db:
+    driver: bridge
