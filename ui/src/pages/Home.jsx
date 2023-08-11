@@ -1,9 +1,8 @@
-export const Home = () => {
+const Home = () => {
   return (
-      <h1 className="text-3xl font-bold underline">
-          Hello world!
-      </h1>
+        <div className="bg-amber-700">Hello World</div>
   )
 }
+export default Home
 
 
