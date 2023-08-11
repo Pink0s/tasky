@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -13,6 +14,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
  * Configuration class for setting up the security filter chain.
@@ -46,23 +49,30 @@ public class SecurityFilterChainConfiguration {
      */
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests((authorize) ->
-                authorize
-                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/user/auth")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()
-        ).sessionManagement((session) -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        ).authenticationProvider(authenticationProvider)
+        http.cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests((authorize) ->
+                     authorize
+
+                             .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
+                             .permitAll()
+                             //.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
+                             .requestMatchers(HttpMethod.POST,"/api/v1/user/auth")
+                             .permitAll()
+                             .anyRequest()
+                             .authenticated()
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement((session) ->
+                        session
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authenticationProvider(authenticationProvider)
                 .exceptionHandling((exceptionHandling) ->
                         exceptionHandling
                                 .authenticationEntryPoint(authenticationEntryPoint)
-                )
-                .build();
+                );
+
+                return http.build();
     }
 }
