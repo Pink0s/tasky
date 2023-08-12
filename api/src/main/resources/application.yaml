@@ -2,7 +2,7 @@ spring:
   datasource:
     password: 'password'
     url: 'jdbc:postgresql://localhost:5432/tasky'
-    username: 'tasky_adm'
+    username: 'tasky'
   jpa:
     hibernate:
       ddl-auto: validate

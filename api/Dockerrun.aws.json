@@ -1,0 +1,23 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "tasky-api",
+      "image": "943819035698.dkr.ecr.eu-west-3.amazonaws.com/tasky-api:latest",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8080
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://awseb-e-mkma2vrgef-stack-awsebrdsdatabase-vdhenlvrmtjx.czlg0gfdsldp.eu-west-3.rds.amazonaws.com:5432/tasky"
+        }
+      ]
+    }
+  ]
+}

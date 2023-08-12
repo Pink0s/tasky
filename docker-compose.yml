@@ -1,0 +1,37 @@
+services:
+  db:
+    container_name: postgres-tasky
+    image: postgres:15.3
+    environment:
+      POSTGRES_USER: tasky
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tasky
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    #ports:
+    #  - 5432:5432
+    restart: unless-stopped
+    networks:
+      - db
+  api:
+    container_name: api-tasky
+    image: 943819035698.dkr.ecr.eu-west-3.amazonaws.com/tasky-api:latest
+    ports:
+      - 8088:8080
+    networks:
+      - db
+    command:
+      - --spring.datasource.url=jdbc:postgresql://db:5432/tasky
+      - --server.issuer=http://127.0.0.1:8080
+      - --server.default-admin-password=password
+      - --server.default-admin-account=test@tasky.com
+      - --allowed-origins=*
+    depends_on:
+      - db
+    restart: unless-stopped
+volumes:
+  postgres:
+networks:
+  db:
+    driver: bridge
