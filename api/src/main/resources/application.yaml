@@ -21,7 +21,6 @@ server:
   default-admin-account: "adm@tasky.com"
   allowed-origins: "*"
   allowed-methods: "*"
-
 management:
   endpoints:
     web:
