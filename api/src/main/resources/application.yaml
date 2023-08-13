@@ -20,4 +20,10 @@ server:
   default-admin-password: "password"
   default-admin-account: "adm@tasky.com"
   allowed-origins: "*"
-  allowed-methods: "GET,POST,DELETE,PATCH"
+  allowed-methods: "*"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"

@@ -56,7 +56,7 @@ public class SecurityFilterChainConfiguration {
 
                              .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
                              .permitAll()
-                             //.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
+                             .requestMatchers(HttpMethod.GET,"/actuator/health").permitAll()
                              .requestMatchers(HttpMethod.POST,"/api/v1/user/auth")
                              .permitAll()
                              .anyRequest()

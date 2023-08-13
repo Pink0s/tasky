@@ -3,7 +3,7 @@
   "containerDefinitions": [
     {
       "name": "tasky-api",
-      "image": "943819035698.dkr.ecr.eu-west-3.amazonaws.com/tasky-api:latest",
+      "image": "943819035698.dkr.ecr.eu-west-3.amazonaws.com/tasky-api:13.08.2023.12.20.40",
       "essential": true,
       "memory": 512,
       "portMappings": [
@@ -15,7 +15,7 @@
       "environment": [
         {
           "name": "SPRING_DATASOURCE_URL",
-          "value": "jdbc:postgresql://awseb-e-mkma2vrgef-stack-awsebrdsdatabase-vdhenlvrmtjx.czlg0gfdsldp.eu-west-3.rds.amazonaws.com:5432/tasky"
+          "value": "jdbc:postgresql://awseb-e-h4ensbmzie-stack-awsebrdsdatabase-en5tyasukdes.czlg0gfdsldp.eu-west-3.rds.amazonaws.com:5432/ebdb"
         }
       ]
     }

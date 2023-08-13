@@ -30,6 +30,19 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+  ui:
+    container_name: ui-tasky
+    image: 943819035698.dkr.ecr.eu-west-3.amazonaws.com/tasky-ui:latest
+    build:
+      context: ui
+      args:
+        api_base_url: http://localhost:8088
+    ports:
+      - 3000:5173
+    depends_on:
+      - api
+    restart: unless-stopped
+
 volumes:
   postgres:
 networks:
