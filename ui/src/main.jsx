@@ -5,6 +5,8 @@ import './styles/index.css'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import AuthProvider from "./contexts/AuthContext.jsx";
+import ProtectedRoute from "./utils/protectedRoute.jsx";
+
 const router = createBrowserRouter(
     [
         {
@@ -13,7 +15,7 @@ const router = createBrowserRouter(
         },
         {
             path: "/test",
-            element: <Home />,
+            element: <ProtectedRoute><Home /></ProtectedRoute>,
         },
     ]
 )

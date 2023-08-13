@@ -3,8 +3,6 @@ import {useFormik} from "formik";
 import {useAuth} from "../contexts/AuthContext.jsx";
 import {useNavigate} from "react-router-dom";
 
-
-
 const Login = () => {
     const { user, login } = useAuth()
     const navigate = useNavigate()
@@ -24,12 +22,9 @@ const Login = () => {
                 .required('Password is required')
         }),
         onSubmit: values => {
-            //alert(JSON.stringify(values, null, 2));
-            login(values).then(
-                navigate("/test")
-            ).catch(err => {
-                console.error(err)
-            })
+            login(values)
+                .then( res => {navigate("/test")})
+                .catch( err => {console.error(err.message)})
         },
     });
 
