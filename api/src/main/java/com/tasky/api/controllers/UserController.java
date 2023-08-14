@@ -2,10 +2,13 @@ package com.tasky.api.controllers;
 
 import com.tasky.api.dto.user.UserAuthenticationRequest;
 import com.tasky.api.dto.user.UserAuthenticationResponse;
+import com.tasky.api.dto.user.UserRegistrationRequest;
+import com.tasky.api.dto.user.UserRegistrationResponse;
 import com.tasky.api.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +49,13 @@ public class UserController {
                 .ok()
                 .header(HttpHeaders.AUTHORIZATION,response.token())
                 .body(response);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserRegistrationResponse postUser(@RequestBody UserRegistrationRequest request) {
+        logger.info("POST /api/v1/user");
+        return userService.userRegistration(request);
     }
 
 }

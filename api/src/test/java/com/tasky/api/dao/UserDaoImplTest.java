@@ -60,4 +60,16 @@ class UserDaoImplTest {
         //THEN
         Mockito.verify(userRepository).save(user);
     }
+
+    /**
+     * Tests the behavior of checking if user exists by email.
+     */
+    @Test
+    void isExistUser() {
+        String email = "test@test.com";
+
+        underTest.isUserExists(email);
+
+        Mockito.verify(userRepository).existsUserByEmail(email);
+    }
 }

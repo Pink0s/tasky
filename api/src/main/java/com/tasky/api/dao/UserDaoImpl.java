@@ -44,4 +44,15 @@ public class UserDaoImpl implements UserDao {
     public User insertUser(User user) {
         return userRepository.save(user);
     }
+
+    /**
+     * Checks whether a user with the specified email exists.
+     *
+     * @param email The email address of the user to be checked.
+     * @return {@code true} if a user with the given email exists, {@code false} otherwise.
+     */
+    @Override
+    public Boolean isUserExists(String email) {
+        return userRepository.existsUserByEmail(email);
+    }
 }

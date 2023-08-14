@@ -1,15 +1,22 @@
 package com.tasky.api.services;
 
-import com.tasky.api.dto.user.UserAuthenticationRequest;
-import com.tasky.api.dto.user.UserAuthenticationResponse;
-import com.tasky.api.dto.user.UserDto;
+import com.github.javafaker.Faker;
+import com.tasky.api.configurations.errors.BadRequestException;
+import com.tasky.api.configurations.errors.DuplicationException;
+import com.tasky.api.dao.UserDao;
+import com.tasky.api.dto.user.*;
 import com.tasky.api.mappers.UserDtoMapper;
 import com.tasky.api.models.User;
 import com.tasky.api.utilities.JwtUtility;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation of the UserService interface, providing user-related operations.
@@ -20,6 +27,9 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtility jwtUtility;
     private final UserDtoMapper userDtoMapper;
+    private final UserDao userDao;
+
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Constructs a UserServiceImpl with the necessary dependencies.
@@ -27,11 +37,15 @@ public class UserServiceImpl implements UserService {
      * @param authenticationManager The AuthenticationManager implementation.
      * @param jwtUtility The JwtUtility implementation for token management.
      * @param userDtoMapper The UserDtoMapper for mapping User entities to DTOs.
+     * @param userDao The UserDao implementation to use for manipulating user data.
+     * @param passwordEncoder The passwordEncoder for perform password encoding.
      */
-    public UserServiceImpl(AuthenticationManager authenticationManager, JwtUtility jwtUtility, UserDtoMapper userDtoMapper) {
+    public UserServiceImpl(AuthenticationManager authenticationManager, JwtUtility jwtUtility, UserDtoMapper userDtoMapper, UserDao userDao, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtUtility = jwtUtility;
         this.userDtoMapper = userDtoMapper;
+        this.userDao = userDao;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -57,4 +71,65 @@ public class UserServiceImpl implements UserService {
 
         return new UserAuthenticationResponse(token,user);
     }
+
+    /**
+     * @param request The UserRegistrationRequest containing user details.
+     * @return A UserRegistrationResponse containing the user id.
+     *
+     */
+    @Override
+    public UserRegistrationResponse userRegistration(@Nullable UserRegistrationRequest request) {
+
+        List<String> stackTrace = new ArrayList<>();
+        boolean isBadRequest = false;
+
+        if(request == null) {
+            stackTrace.add("Missing Field firstName");
+            stackTrace.add("Missing Field lastName");
+            stackTrace.add("Missing Field email");
+            throw new BadRequestException(stackTrace.toString());
+        }
+
+        if(request.firstName() == null ) {
+            stackTrace.add("Missing Field firstName");
+            isBadRequest=true;
+        }
+
+        if(request.lastName() == null) {
+            stackTrace.add("Missing Field lastName");
+            isBadRequest=true;
+        }
+
+        if(request.email() == null) {
+            stackTrace.add("Missing Field email");
+            isBadRequest=true;
+        }
+
+        if(isBadRequest) {
+            throw new BadRequestException(stackTrace.toString());
+        }
+
+        if(userDao.isUserExists(request.email())) {
+            throw new DuplicationException("Email already in use");
+        }
+
+        Faker faker = new Faker();
+
+        User user = new User(
+                request.firstName(),
+                request.lastName(),
+                request.email(),
+                passwordEncoder.encode(
+                        faker.internet().password()
+                )
+        );
+
+        User createdUser = userDao.insertUser(user);
+
+        UserDto userDto = userDtoMapper.apply(createdUser);
+
+        return new UserRegistrationResponse(userDto);
+    }
+
+
 }

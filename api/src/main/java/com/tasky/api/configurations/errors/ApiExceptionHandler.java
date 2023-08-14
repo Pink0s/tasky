@@ -66,6 +66,50 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * Handles BadRequestException and returns an appropriate response.
+     */
+    @ExceptionHandler(value = BadRequestException.class)
+    public ResponseEntity<Object> handleApiRequestException(
+            BadRequestException e,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+
+        ApiException apiException = new ApiException(
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                ZonedDateTime.now()
+        );
+        logger.error(apiException.toString());
+        return new ResponseEntity<>(
+                apiException,
+                HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles BadRequestException and returns an appropriate response.
+     */
+    @ExceptionHandler(value = DuplicationException.class)
+    public ResponseEntity<Object> handleApiRequestException(
+            DuplicationException e,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+
+        ApiException apiException = new ApiException(
+                e.getMessage(),
+                HttpStatus.CONFLICT,
+                ZonedDateTime.now()
+        );
+
+        logger.error(apiException.toString());
+
+        return new ResponseEntity<>(
+                apiException,
+                HttpStatus.CONFLICT);
+    }
+
+    /**
      * Handles BadCredentialsException and returns an appropriate response.
      * */
     @ExceptionHandler(value = BadCredentialsException.class)

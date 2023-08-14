@@ -59,8 +59,10 @@ public class SecurityFilterChainConfiguration {
                              .requestMatchers(HttpMethod.GET,"/actuator/health").permitAll()
                              .requestMatchers(HttpMethod.POST,"/api/v1/user/auth")
                              .permitAll()
+                             .requestMatchers("/api/v1/user")
+                             .hasRole("ADMIN")
                              .anyRequest()
-                             .authenticated()
+                             .denyAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement((session) ->

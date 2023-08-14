@@ -24,4 +24,12 @@ public interface UserDao {
      * @return The inserted User object.
      */
     User insertUser(User user);
+
+    /**
+     * Checks whether a user with the specified email exists.
+     *
+     * @param email The email address of the user to be checked.
+     * @return {@code true} if a user with the given email exists, {@code false} otherwise.
+     */
+    Boolean isUserExists(String email);
 }

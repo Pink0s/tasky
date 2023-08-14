@@ -81,4 +81,44 @@ class UserRepositoryTest extends AbstractTestContainer {
 
     }
 
+    /**
+     * Unit test to check if a user exists by email in the repository.
+     */
+    @Test
+    void isUserExistByEmail() {
+        //GIVEN
+        User user = new User(
+                "test",
+                "test",
+                "test@test.test",
+                "password123452435134513"
+        );
+
+        user.setRole("ADMIN");
+
+        underTest.save(user);
+
+        //WHEN
+        boolean resultUser = underTest.existsUserByEmail(user.getEmail());
+
+        //THEN
+        assertTrue(resultUser);
+
+    }
+
+    /**
+     * Unit test to check if a user does not exist by email in the repository.
+     */
+    @Test
+    void isUserDoesNotExistByEmail() {
+        //GIVEN
+        String email = "fake@test.com";
+
+        //WHEN
+        boolean resultUser = underTest.existsUserByEmail(email);
+
+        //THEN
+        assertFalse(resultUser);
+    }
+
 }
