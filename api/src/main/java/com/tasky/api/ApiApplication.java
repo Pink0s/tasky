@@ -1,7 +1,7 @@
 package com.tasky.api;
 
-import com.tasky.api.dao.UserDao;
 import com.tasky.api.models.User;
+import com.tasky.api.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -24,12 +24,12 @@ public class ApiApplication {
     }
 
     @Bean
-    CommandLineRunner commandLineRunner(UserDao userDao) {
+    CommandLineRunner commandLineRunner(UserRepository userRepository) {
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         return args -> {
-            Optional<User> userAlreadyExist = userDao.selectUserByEmail(account);
+            Optional<User> userAlreadyExist = userRepository.findUserByEmail(account);
 
             if(userAlreadyExist.isEmpty()) {
                 User user = new User(
@@ -40,7 +40,7 @@ public class ApiApplication {
                 );
 
                 user.setRole("ADMIN");
-                userDao.insertUser(user);
+                userRepository.save(user);
             }
         };
     }
