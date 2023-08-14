@@ -35,10 +35,10 @@ class UserDtoMapperTest {
 
         // THEN
         assertEquals(user.getId(), userDto.id());
-        assertEquals(user.getFirst_name(), userDto.first_name());
-        assertEquals(user.getLast_name(), userDto.last_name());
+        assertEquals(user.getFirstName(), userDto.firstName());
+        assertEquals(user.getLastName(), userDto.lastName());
         assertEquals(user.getEmail(), userDto.email());
         assertEquals(user.getRole(), userDto.role());
-        assertEquals(user.getNever_connected(), userDto.never_connected());
+        assertEquals(user.getNeverConnected(), userDto.neverConnected());
     }
 }

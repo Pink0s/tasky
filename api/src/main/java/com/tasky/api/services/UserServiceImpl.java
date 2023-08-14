@@ -131,5 +131,58 @@ public class UserServiceImpl implements UserService {
         return new UserRegistrationResponse(userDto);
     }
 
+    /**
+     * @param request The {@link SearchUsersRequest} containing the search criteria.
+     * @return
+     */
+    @Override
+    public SearchUsersResponse searchUsers(SearchUsersRequest request) {
+        return null;
+    }
+
+    /**
+     * @param id The unique identifier (ID) of the user to be deleted.
+     */
+    @Override
+    public void deleteUserById(Long id) {
+
+    }
+
+    /**
+     * @param request The {@link UpdateUserRequest} containing the updated user information.
+     * @param userId The {@link Long} containing the id of user.
+     * @return
+     */
+    @Override
+    public UserDto updateUser(UpdateUserRequest request, Long userId) {
+        return null;
+    }
+
+    /**
+     * @param request The {@link UpdatePasswordRequest} containing the updated password information.
+     */
+    @Override
+    public void updatePassword(Authentication authentication, UpdatePasswordRequest request) {
+
+    }
+
+    /**
+     * @param authentication The authentication object representing the current authenticated user.
+     * @return
+     */
+    @Override
+    public UserDto getProfile(Authentication authentication) {
+        return null;
+    }
+
+    /**
+     * @param id The unique identifier (ID) of the use retrieve information
+     * @return
+     */
+    @Override
+    public UserDto getUserById(Long id) {
+        return null;
+    }
+
 
 }

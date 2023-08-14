@@ -59,7 +59,7 @@ public class SecurityFilterChainConfiguration {
                              .requestMatchers(HttpMethod.GET,"/actuator/health").permitAll()
                              .requestMatchers(HttpMethod.POST,"/api/v1/user/auth")
                              .permitAll()
-                             .requestMatchers("/api/v1/user")
+                             .requestMatchers("/api/v1/user/**")
                              .hasRole("ADMIN")
                              .anyRequest()
                              .denyAll()

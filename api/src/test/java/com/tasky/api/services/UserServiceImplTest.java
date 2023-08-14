@@ -76,11 +76,11 @@ class UserServiceImplTest {
 
         UserDto userDto = new UserDto(
                 userPrincipal.getId(),
-                userPrincipal.getFirst_name(),
-                userPrincipal.getLast_name(),
+                userPrincipal.getFirstName(),
+                userPrincipal.getLastName(),
                 userPrincipal.getEmail(),
                 userPrincipal.getRole(),
-                userPrincipal.getNever_connected()
+                userPrincipal.getNeverConnected()
         );
 
         when(
@@ -172,8 +172,8 @@ class UserServiceImplTest {
         );
 
         user.setId(2L);
-        user.setCreated_at(Timestamp.from(Instant.now()));
-        user.setUpdated_at(Timestamp.from(Instant.now()));
+        user.setCreatedAt(Timestamp.from(Instant.now()));
+        user.setUpdatedAt(Timestamp.from(Instant.now()));
 
         when(
                 userDao.insertUser(any())
@@ -188,11 +188,11 @@ class UserServiceImplTest {
         ).thenReturn(
                 new UserDto(
                         user.getId(),
-                        user.getFirst_name(),
-                        user.getLast_name(),
+                        user.getFirstName(),
+                        user.getLastName(),
                         user.getEmail(),
                         user.getRole(),
-                        user.getNever_connected())
+                        user.getNeverConnected())
         );
 
         //WHEN
@@ -200,7 +200,7 @@ class UserServiceImplTest {
 
         //THEN
         assertEquals(response.userDto().email(), request.email());
-        assertEquals(response.userDto().last_name(), request.lastName());
+        assertEquals(response.userDto().lastName(), request.lastName());
         assertEquals(response.userDto().email(), request.email());
     }
 

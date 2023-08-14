@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,12 +71,12 @@ class UserRepositoryTest extends AbstractTestContainer {
 
         assertAll("User properties",
                 () -> assertEquals(user.getEmail(), retrievedUser.getEmail()),
-                () -> assertEquals(user.getFirst_name(), retrievedUser.getFirst_name()),
-                () -> assertEquals(user.getLast_name(), retrievedUser.getLast_name()),
+                () -> assertEquals(user.getFirstName(), retrievedUser.getFirstName()),
+                () -> assertEquals(user.getLastName(), retrievedUser.getLastName()),
                 () -> assertEquals(user.getPassword(), retrievedUser.getPassword()),
                 () -> assertTrue(retrievedUser.isEnabled()),
                 () -> assertTrue(retrievedUser.isAccountNonExpired()),
-                () -> assertTrue(retrievedUser.getNever_connected()),
+                () -> assertTrue(retrievedUser.getNeverConnected()),
                 () -> assertTrue(retrievedUser.isAccountNonLocked()),
                 () -> assertTrue(retrievedUser.isCredentialsNonExpired()),
                 () -> assertEquals(user.getRole(), retrievedUser.getRole())
@@ -121,4 +124,84 @@ class UserRepositoryTest extends AbstractTestContainer {
         assertFalse(resultUser);
     }
 
+    /**
+     * Unit test search users by email contains.
+     */
+    @Test
+    void findAllByEmailContainsShouldReturnMatchingUsers() {
+        // GIVEN
+        User user1 = new User("John", "Doe", "john@example.com", "password");
+        User user2 = new User("Jane", "Smith", "jane@example.com", "password");
+        User user3 = new User("Robert", "Johnson", "robert@example.com", "password");
+
+        underTest.save(user1);
+        underTest.save(user2);
+        underTest.save(user3);
+
+        String searchPattern = "example";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // WHEN
+        Page<User> resultPage = underTest.findAllByEmailContains(searchPattern, pageable);
+
+        // THEN
+        assertEquals(3, resultPage.getTotalElements());
+        assertTrue(resultPage.stream().allMatch(user ->
+                user.getEmail().contains(searchPattern)
+        ));
+    }
+
+    /**
+     * Unit test search users by firstname contains.
+     */
+    @Test
+    void findAllByFirstNameContainsShouldReturnMatchingUsers() {
+        // GIVEN
+        User user1 = new User("John", "Doe", "john@example.com", "password");
+        User user2 = new User("Jane", "Smith", "jane@example.com", "password");
+        User user3 = new User("Robert", "Johnson", "robert@example.com", "password");
+
+        underTest.save(user1);
+        underTest.save(user2);
+        underTest.save(user3);
+
+        String searchPattern = "John";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // WHEN
+        Page<User> resultPage = underTest.findUsersByFirstNameContaining(searchPattern, pageable);
+
+        // THEN
+        assertEquals(1, resultPage.getTotalElements());
+        assertTrue(resultPage.stream().allMatch(user ->
+                user.getFirstName().contains(searchPattern)
+        ));
+    }
+
+    /**
+     * Unit test search users by lastname contains.
+     */
+    @Test
+    void findAllByLastNameContainsShouldReturnMatchingUsers() {
+        // GIVEN
+        User user1 = new User("John", "Doe", "john@example.com", "password");
+        User user2 = new User("Jane", "Smith", "jane@example.com", "password");
+        User user3 = new User("Robert", "Johnson", "robert@example.com", "password");
+
+        underTest.save(user1);
+        underTest.save(user2);
+        underTest.save(user3);
+
+        String searchPattern = "Doe";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // WHEN
+        Page<User> resultPage = underTest.findUsersByLastNameContaining(searchPattern, pageable);
+
+        // THEN
+        assertEquals(1, resultPage.getTotalElements());
+        assertTrue(resultPage.stream().allMatch(user ->
+                user.getLastName().contains(searchPattern)
+        ));
+    }
 }

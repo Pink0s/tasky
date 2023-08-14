@@ -2,6 +2,8 @@ package com.tasky.api.dao;
 
 import com.tasky.api.models.User;
 import com.tasky.api.repositories.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -55,4 +57,74 @@ public class UserDaoImpl implements UserDao {
     public Boolean isUserExists(String email) {
         return userRepository.existsUserByEmail(email);
     }
+
+    /**
+     * Retrieves a page of users whose email addresses match the provided search pattern.
+     *
+     * @param email The search pattern to match against email addresses.
+     * @param page  The pageable settings for retrieving the result.
+     * @return A {@link Page} containing the users whose email addresses match the search pattern.
+     */
+    @Override
+    public Page<User> selectAllUsersByEmail(String email, Pageable page) {
+        return userRepository.findAllByEmailContains(email,page);
+    }
+
+    /**
+     * Retrieves a page of users whose last names match the provided search pattern.
+     *
+     * @param lastName The search pattern to match against last names.
+     * @param page     The pageable settings for retrieving the result.
+     * @return A {@link Page} containing the users whose last names match the search pattern.
+     */
+    @Override
+    public Page<User> selectAllUsersByLastName(String lastName, Pageable page) {
+        return userRepository.findUsersByLastNameContaining(lastName,page);
+    }
+
+    /**
+     * Retrieves a page of users whose first names match the provided search pattern.
+     *
+     * @param firstName The search pattern to match against first names.
+     * @param page      The pageable settings for retrieving the result.
+     * @return A {@link Page} containing the users whose first names match the search pattern.
+     */
+    @Override
+    public Page<User> selectAllUsersByFirstName(String firstName, Pageable page) {
+        return userRepository.findUsersByFirstNameContaining(firstName,page);
+    }
+
+    /**
+     * Deletes a user by their ID.
+     *
+     * @param id The ID of the user to be deleted.
+     */
+    @Override
+    public void deleteUserById(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    /**
+     * Updates the information of a user with the provided user object.
+     *
+     * @param user The user object containing updated information.
+     * @return The updated user object after the changes have been applied.
+     */
+    @Override
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param id The ID of the user to retrieve.
+     * @return The retrieved {@link Optional<User>} object if found, or {@code null} if no user with the given ID exists.
+     */
+    @Override
+    public Optional<User> selectUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+
 }
