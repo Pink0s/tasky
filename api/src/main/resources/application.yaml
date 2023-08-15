@@ -17,7 +17,7 @@ server:
     include-message: always
   secret_key: "test_test_secret_key_test_test_secret_key"
   issuer: "http://127.0.0.1:8080"
-  default-admin-password: "password"
+  default-admin-password: "kybmab-Hijjek-gunpe3"
   default-admin-account: "adm@tasky.com"
   allowed-origins: "*"
   allowed-methods: "*"

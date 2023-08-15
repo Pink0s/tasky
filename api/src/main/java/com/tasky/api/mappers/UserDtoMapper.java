@@ -21,11 +21,11 @@ public class UserDtoMapper implements Function<User, UserDto> {
     public UserDto apply(User user) {
         return new UserDto(
                 user.getId(),
-                user.getFirst_name(),
-                user.getLast_name(),
+                user.getFirstName(),
+                user.getLastName(),
                 user.getEmail(),
                 user.getRole(),
-                user.getNever_connected()
+                user.getNeverConnected()
         );
     }
 }

@@ -36,33 +36,33 @@ public class User implements UserDetails {
             generator = "user_account_id_seq"
     )
     @Id private Long id;
-    @Column(nullable = false) private String first_name;
-    @Column(nullable = false) private String last_name;
+    @Column(nullable = false) private String firstName;
+    @Column(nullable = false) private String lastName;
     @Column(nullable = false) private String email;
     @Column(nullable = false) private String password;
-    @Column(nullable = false) private Boolean never_connected;
+    @Column(nullable = false) private Boolean neverConnected;
     @Column(nullable = false) private String role;
-    @Column(nullable = false) private Timestamp created_at;
-    @Column(nullable = false) private Timestamp updated_at;
+    @Column(nullable = false) private Timestamp createdAt;
+    @Column(nullable = false) private Timestamp updatedAt;
 
     /**
      * Creates a user with the given parameters.
      *
-     * @param first_name The first name of the user.
-     * @param last_name The last name of the user.
+     * @param firstName The first name of the user.
+     * @param lastName The last name of the user.
      * @param email The email address of the user.
      * @param password The password of the user.
      */
-    public User(String first_name, String last_name, String email, String password) {
+    public User(String firstName, String lastName, String email, String password) {
         Timestamp timestamp = Timestamp.from(Instant.now());
-        this.first_name = first_name;
-        this.last_name = last_name;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.never_connected = true;
+        this.neverConnected = true;
         this.role = "USER";
-        this.created_at = timestamp;
-        this.updated_at = timestamp;
+        this.createdAt = timestamp;
+        this.updatedAt = timestamp;
     }
 
     @Override
