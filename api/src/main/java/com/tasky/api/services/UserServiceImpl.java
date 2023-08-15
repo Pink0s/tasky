@@ -3,11 +3,16 @@ package com.tasky.api.services;
 import com.github.javafaker.Faker;
 import com.tasky.api.configurations.errors.BadRequestException;
 import com.tasky.api.configurations.errors.DuplicationException;
+import com.tasky.api.configurations.errors.NotFoundException;
 import com.tasky.api.dao.UserDao;
+import com.tasky.api.dto.PageableDto;
 import com.tasky.api.dto.user.*;
 import com.tasky.api.mappers.UserDtoMapper;
 import com.tasky.api.models.User;
 import com.tasky.api.utilities.JwtUtility;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,8 +20,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Implementation of the UserService interface, providing user-related operations.
@@ -114,13 +123,13 @@ public class UserServiceImpl implements UserService {
         }
 
         Faker faker = new Faker();
-
+        String password = faker.internet().password();
         User user = new User(
                 request.firstName(),
                 request.lastName(),
                 request.email(),
                 passwordEncoder.encode(
-                        faker.internet().password()
+                        password
                 )
         );
 
@@ -128,16 +137,79 @@ public class UserServiceImpl implements UserService {
 
         UserDto userDto = userDtoMapper.apply(createdUser);
 
-        return new UserRegistrationResponse(userDto);
+        return new UserRegistrationResponse(userDto,password);
     }
 
     /**
-     * @param request The {@link SearchUsersRequest} containing the search criteria.
-     * @return
+     * Searches for users based on the provided search criteria and returns the results along with pagination details.
+     *
+     * @param request The SearchUsersRequest containing the search criteria.
+     * @return A SearchUsersResponse containing a list of UserDto objects and pagination details.
+     * @throws BadRequestException If the request is invalid or contains incorrect parameters.
      */
     @Override
     public SearchUsersResponse searchUsers(SearchUsersRequest request) {
-        return null;
+        int page = 0;
+        int perPage = 10;
+        String pattern = "";
+        String type = "";
+        List<String> stackTrace = new ArrayList<>();
+
+        if(request == null) {
+            type = "email";
+        }
+
+        if(request != null && request.page() != null) {
+            page = request.page();
+        }
+
+        if(request != null && request.type() == null) {
+            type = "email";
+        } else if (request != null){
+            switch (request.type()) {
+                case "email" -> type = "email";
+                case "firstName" -> type = "firstName";
+                case "lastName" -> type = "lastName";
+                default -> {
+                    stackTrace.add("Invalid type");
+                    throw new BadRequestException(stackTrace.toString());
+                }
+            }
+        }
+
+
+        if(request != null && request.pattern() != null) {
+            pattern = request.pattern();
+        }
+
+
+        Pageable pageable = PageRequest.of(page,perPage);
+        Page<User> pageResult = null;
+        switch (type) {
+            case "email" -> pageResult = userDao.selectAllUsersByEmail(pattern, pageable);
+            case "firstName" -> pageResult = userDao.selectAllUsersByFirstName(pattern, pageable);
+            case "lastName" -> pageResult = userDao.selectAllUsersByLastName(pattern, pageable);
+        }
+
+        if(pageResult.getTotalPages() <= page ) {
+            stackTrace.add("Page requested does not exists");
+            throw new BadRequestException(stackTrace.toString());
+        }
+
+        PageableDto pageableDto = new PageableDto(
+                page,
+                pageResult.getTotalPages()-1,
+                pageResult.getTotalPages(),
+                pageResult.getNumberOfElements()
+        );
+
+        List<UserDto> users =  pageResult
+                .getContent()
+                .stream()
+                .map(userDtoMapper)
+                .toList();
+
+        return new SearchUsersResponse(users,pageableDto);
     }
 
     /**
@@ -146,42 +218,163 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long id) {
 
+        userDao
+                .selectUserById(id)
+                .orElseThrow(
+                        () -> new NotFoundException("User with id "+id+" Not Found")
+                );
+
+        userDao.deleteUserById(id);
     }
 
     /**
+     * Updates user information based on the provided request and user ID.
+     *
      * @param request The {@link UpdateUserRequest} containing the updated user information.
-     * @param userId The {@link Long} containing the id of user.
-     * @return
+     * @param userId The {@link Long} representing the unique identifier (ID) of the user.
+     * @return A {@link UserDto} containing the updated user information.
+     * @throws NotFoundException If the user with the given ID is not found.
+     * @throws BadRequestException If the request is missing a required field or contains invalid data.
      */
     @Override
-    public UserDto updateUser(UpdateUserRequest request, Long userId) {
-        return null;
+    public UpdateUserResponse updateUser(UpdateUserRequest request, Long userId) {
+        boolean changes = false;
+        boolean passwdChanges = false;
+        String passwd = null;
+
+        User user = userDao
+                .selectUserById(userId)
+                .orElseThrow(
+                        () -> new NotFoundException("User with id "+userId+" Not Found")
+                );
+
+        if(request == null) {
+            throw new BadRequestException("Missing request body");
+        }
+
+        if(request.passwordReset() != null && request.passwordReset()) {
+            Faker faker = new Faker();
+            user.setNeverConnected(true);
+            passwd = faker.internet().password();
+            user.setPassword(passwordEncoder.encode(passwd));
+            passwdChanges = true;
+            changes = true;
+        }
+
+        if(request.role() != null) {
+            switch (request.role()) {
+                case "ADMIN", "USER", "PROJECT_MANAGER" -> {
+
+                    if(!Objects.equals(user.getRole(), request.role())) {
+                        user.setRole(request.role());
+                        changes = true;
+                    }
+
+                }
+                default -> {
+                    List<String> stackTrace = new ArrayList<>();
+                    stackTrace.add("Invalid role");
+                    throw new BadRequestException(stackTrace.toString());
+                }
+            }
+        }
+
+        if(!changes) {
+            throw new BadRequestException("No changes found");
+        }
+
+        user.setUpdatedAt(Timestamp.from(Instant.now()));
+
+        User updatedUser = userDao.updateUser(user);
+
+        if(passwdChanges) {
+            return new UpdateUserResponse(
+                    userDtoMapper.apply(updatedUser),
+                    Optional.of(passwd)
+            );
+        }
+
+        return new UpdateUserResponse(
+                userDtoMapper.apply(updatedUser),
+                Optional.empty()
+        );
+
     }
 
     /**
+     * Updates the user's password based on the provided request and the user's current authentication.
+     *
+     * @param authentication The authentication object representing the currently authenticated user.
      * @param request The {@link UpdatePasswordRequest} containing the updated password information.
+     * @throws BadRequestException If the request body is missing required fields or contains invalid data.
      */
     @Override
     public void updatePassword(Authentication authentication, UpdatePasswordRequest request) {
+        List<String> stackTrace = new ArrayList<>();
 
+        if(request == null) {
+            stackTrace.add("Missing request body");
+            throw new BadRequestException(stackTrace.toString());
+        }
+
+        User user = (User) authentication.getPrincipal();
+
+
+        if(request.oldPassword() == null) {
+            stackTrace.add("Missing oldPassword");
+            throw new BadRequestException(stackTrace.toString());
+        }
+
+        if(!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            stackTrace.add("Wrong oldPassword");
+            throw new BadRequestException(stackTrace.toString());
+        }
+
+        if(request.newPassword() == null) {
+            stackTrace.add("Missing newPassword");
+            throw new BadRequestException(stackTrace.toString());
+        }
+
+        if(request.newPassword().equals(request.oldPassword())) {
+            stackTrace.add("Old and New password are equals");
+            throw new BadRequestException(stackTrace.toString());
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+
+        userDao.updateUser(user);
     }
 
     /**
+     * Retrieves the profile information of the currently authenticated user.
+     *
      * @param authentication The authentication object representing the current authenticated user.
-     * @return
+     * @return A {@link UserDto} containing the profile information of the authenticated user.
      */
     @Override
     public UserDto getProfile(Authentication authentication) {
-        return null;
+        User user = (User) authentication.getPrincipal();
+        return userDtoMapper.apply(user);
     }
 
     /**
-     * @param id The unique identifier (ID) of the use retrieve information
-     * @return
+     * Retrieves user information based on the provided user ID.
+     *
+     * @param id The unique identifier (ID) of the user to retrieve information for.
+     * @return A {@link UserDto} containing the user information.
+     * @throws NotFoundException If the user with the given ID is not found.
      */
     @Override
     public UserDto getUserById(Long id) {
-        return null;
+        User user = userDao
+                .selectUserById(id)
+                .orElseThrow(() ->
+                        new NotFoundException(
+                            "User with id %s Not Found".formatted(id)
+                        )
+                );
+
+        return userDtoMapper.apply(user);
     }
 
 

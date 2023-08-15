@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,7 +94,7 @@ public class UserController {
      * @return A {@link SearchUsersResponse} containing the list of matching users.
      */
     @GetMapping
-    public SearchUsersResponse getUsers(@RequestBody SearchUsersRequest request) {
+    public SearchUsersResponse getUsers(@Nullable @RequestBody SearchUsersRequest request) {
         logger.info("GET /api/v1/user");
         return userService.searchUsers(request);
     }
@@ -105,8 +106,9 @@ public class UserController {
      * @param request The {@link UpdateUserRequest} containing the updated user information.
      * @return The updated user information as a {@link UserDto}.
      */
-    @PutMapping("{userId}")
-    public UserDto updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequest request) {
+
+    @PatchMapping("{userId}")
+    public UpdateUserResponse updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequest request) {
         logger.info("PUT /api/v1/user/"+userId);
         return userService.updateUser(request,userId);
     }
@@ -117,9 +119,10 @@ public class UserController {
      * @param authentication The authentication object representing the current authenticated user.
      * @param request        The {@link UpdatePasswordRequest} containing the updated password information.
      */
-    @PutMapping("profile")
-    public void changePassword(Authentication authentication,UpdatePasswordRequest request) {
+    @PatchMapping("profile")
+    public void changePassword(Authentication authentication,@RequestBody UpdatePasswordRequest request) {
         logger.info("PUT /api/v1/user/profile");
+        System.out.println(request);
         userService.updatePassword(authentication,request);
     }
 
@@ -128,6 +131,7 @@ public class UserController {
      *
      * @param id The ID of the user to be deleted.
      */
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{id}")
     public void deleteUser(@PathVariable Long id) {
         logger.info("DELETE /api/v1/user"+id);

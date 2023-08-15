@@ -45,7 +45,7 @@ public interface UserService {
      * @param request The {@link UpdateUserRequest} containing the updated user information.
      * @return The updated user information as a {@link UserDto}.
      */
-    UserDto updateUser(@Nullable UpdateUserRequest request, Long userId);
+    UpdateUserResponse updateUser(@Nullable UpdateUserRequest request, Long userId);
 
     /**
      * Updates a user's password based on the provided {@link UpdatePasswordRequest}.

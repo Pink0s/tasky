@@ -1,8 +1,7 @@
 package com.tasky.api.journey;
 
 import com.tasky.api.AbstractTestContainer;
-import com.tasky.api.dto.user.UserAuthenticationRequest;
-import com.tasky.api.dto.user.UserRegistrationRequest;
+import com.tasky.api.dto.user.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +14,7 @@ import reactor.core.publisher.Mono;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for the admin journey, focusing on authentication and login functionality.
@@ -72,7 +71,8 @@ public class AdminJourneyIntegrationTest extends AbstractTestContainer {
         assertFalse(token.isEmpty());
 
         UserRegistrationRequest createNewUser = new UserRegistrationRequest("testus","testus","testus@tasky.test");
-        webTestClient.post()
+
+        UserRegistrationResponse userRegistrationResponse = webTestClient.post()
                 .uri("/api/v1/user")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -80,6 +80,89 @@ public class AdminJourneyIntegrationTest extends AbstractTestContainer {
                 .body(Mono.just(createNewUser), UserRegistrationRequest.class)
                 .exchange()
                 .expectStatus()
-                .isCreated();
+                .isCreated()
+                .expectBody(UserRegistrationResponse.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertNotNull(userRegistrationResponse);
+        Long id = userRegistrationResponse.userDto().id();
+
+        assertNotNull(id);
+
+        webTestClient.get()
+                .uri("/api/v1/user/profile")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", token))
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        SearchUsersResponse response = webTestClient
+                .get()
+                .uri("/api/v1/user")
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", token))
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(SearchUsersResponse.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertNotNull(response);
+
+        UserDto userDto = webTestClient
+                .get()
+                .uri("/api/v1/user/"+id)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", token))
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(UserDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertNotNull(userDto);
+
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest(true,null);
+        UpdateUserResponse updateUserResponse = webTestClient
+                .patch()
+                .uri("/api/v1/user/"+id)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(updateUserRequest),UpdateUserRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(UpdateUserResponse.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertNotNull(updateUserResponse);
+
+        webTestClient
+                .delete()
+                .uri("/api/v1/user/"+id)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", token))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+
+        UpdatePasswordRequest updatePasswordRequest = new UpdatePasswordRequest(adminPassword,"test123456");
+        webTestClient
+                .patch()
+                .uri("/api/v1/user/profile")
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", token))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(updatePasswordRequest),UpdatePasswordRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .returnResult()
+        ;
     }
 }

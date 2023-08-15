@@ -110,6 +110,29 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * Handles NotFound and returns an appropriate response.
+     */
+    @ExceptionHandler(value = NotFoundException.class)
+    public ResponseEntity<Object> handleApiRequestException(
+            NotFoundException e,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+
+        ApiException apiException = new ApiException(
+                e.getMessage(),
+                HttpStatus.NOT_FOUND,
+                ZonedDateTime.now()
+        );
+
+        logger.error(apiException.toString());
+
+        return new ResponseEntity<>(
+                apiException,
+                HttpStatus.NOT_FOUND);
+    }
+
+    /**
      * Handles BadCredentialsException and returns an appropriate response.
      * */
     @ExceptionHandler(value = BadCredentialsException.class)
