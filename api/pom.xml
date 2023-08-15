@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.tasky</groupId>
     <artifactId>api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>Version-0.3.0a</version>
     <name>api</name>
     <organization>
         <name>tasky</name>
