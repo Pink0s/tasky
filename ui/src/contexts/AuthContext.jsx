@@ -1,39 +1,27 @@
-import {createContext, useContext, useState} from "react";
-import {login as performLogin} from "../utils/client.js";
+import {createContext, useContext, useEffect, useState} from "react";
+import {getMyProfile, login as performLogin} from "../utils/client.js";
 
-/**
- * Creates a context to manage authentication-related information.
- * @function createContext
- * @param {Object} defaultValue - The default value for the context.
- * @returns {AuthContext} The authentication context.
- */
 const AuthContext = createContext({})
 
+
+function parseJwt (token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
 // eslint-disable-next-line react/prop-types
-/**
- * Provides authentication-related functionality to its children components.
- * @component
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - The child components that require authentication.
- * @returns {React.ReactNode} Children components wrapped in the authentication context.
- */
+
 const AuthProvider = ({ children }) => {
-    /**
-     * State to store the authenticated user's information.
-     * @typedef {Object} user
-     */
+
     const [user, setUser] = useState(null)
 
-    /**
-     * Logs in a user with provided username and password.
-     * @async
-     * @function
-     * @param {Object} usernameAndPassword - An object containing the user's username and password.
-     * @param {string} usernameAndPassword.username - The username of the user.
-     * @param {string} usernameAndPassword.password - The password of the user.
-     * @throws {Error} Throws an error if the login attempt fails.
-     * @returns {Promise} A Promise that resolves to the login response.
-     */
+    const [authLoading,setAuthLoading] = useState(true);
+
     const login = async (usernameAndPassword) => {
         return new Promise((resolve, reject) => {
           performLogin(usernameAndPassword).then(res => {
@@ -49,26 +37,44 @@ const AuthProvider = ({ children }) => {
         })
     }
 
-    /**
-     * Checks if the user is authenticated.
-     * @function
-     * @returns {boolean} True if the user is authenticated, otherwise false.
-     */
     const isUserAuthenticated = () => {
         return localStorage.getItem("access_token") != null;
     }
 
+    const logout = () => {
+        localStorage.removeItem("access_token")
+    }
+
+    useEffect(() => {
+
+        if(isUserAuthenticated() && !user) {
+            const payload = parseJwt(localStorage.getItem("access_token"));
+            const date = Math.floor(Date.now() / 1000)
+
+            if(date < payload.exp) {
+                getMyProfile()
+                    .then( (res) => {
+                        setUser(res.data)
+                    })
+                    .catch((err) => {
+                        localStorage.removeItem("access_token")
+                    }).finally(() => {
+                        setAuthLoading(false);
+                })
+            } else {
+                localStorage.removeItem("access_token")
+                setAuthLoading(false);
+            }
+        }
+
+    })
+
     return (
-        <AuthContext.Provider value={{user,login,isUserAuthenticated}}>
+        <AuthContext.Provider value={{user,login,isUserAuthenticated,authLoading, logout}}>
             {children}
         </AuthContext.Provider>
     )
 }
 
-/**
- * Custom hook to use the authentication context.
- * @function useAuth
- * @returns {AuthContext} Authentication context.
- */
 export const useAuth = () => useContext(AuthContext)
 export default AuthProvider

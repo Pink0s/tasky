@@ -90,13 +90,29 @@ public class UserController {
     /**
      * Retrieves a list of users based on the provided search criteria.
      *
-     * @param request The {@link SearchUsersRequest} containing the search criteria.
+
      * @return A {@link SearchUsersResponse} containing the list of matching users.
      */
     @GetMapping
-    public SearchUsersResponse getUsers(@Nullable @RequestBody SearchUsersRequest request) {
+    public SearchUsersResponse getUsers(@RequestParam(required = false) String type, @RequestParam(required = false) String pattern,  @RequestParam(required = false) Integer page) {
+
+        String requestType = null;
+        String requestPattern = null;
+        Integer requestPage = null;
+
+        //String type, String pattern, Integer page
+        if(type != null) {
+            requestType = type;
+        }
+
+        if(pattern != null) {
+            requestPattern = pattern;
+        }
+        if(page != null) {
+            requestPage = page;
+        }
         logger.info("GET /api/v1/user");
-        return userService.searchUsers(request);
+        return userService.searchUsers(new SearchUsersRequest(requestType,requestPattern,requestPage));
     }
 
     /**

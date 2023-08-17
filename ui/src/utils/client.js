@@ -1,24 +1,99 @@
 import axios from "axios";
-/**
- * Makes an asynchronous POST request to the authentication endpoint to log in a user.
- *
- * @async
- * @function
- * @param {Object} usernameAndPassword - An object containing the user's username and password.
- * @param {string} usernameAndPassword.username - The username of the user.
- * @param {string} usernameAndPassword.password - The password of the user.
- * @throws {Error} Throws an error if the login attempt fails.
- * @returns {Promise} A Promise that resolves to the response data from the authentication endpoint.
- */
-export const login = async (usernameAndPassword) => {
-    // eslint-disable-next-line no-useless-catch
-    try {
 
+const getAuthConfig = () => ({
+        headers: {
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        }
+})
+
+export const login = async (usernameAndPassword) => {
         return await axios.post(
             `${import.meta.env.VITE_API_URL}/api/v1/user/auth`,
             usernameAndPassword
         )
-    } catch (e) {
-        throw new Error(e.message);
+
+}
+
+export const getMyProfile = async () => {
+        return await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/v1/user/profile`,
+            getAuthConfig()
+        )
+}
+
+export const changePassword = async ({oldPassword, newPassword}) => {
+        return await axios.patch(
+            `${import.meta.env.VITE_API_URL}/api/v1/user/profile`,
+            {
+                    oldPassword,
+                    newPassword
+            },
+            getAuthConfig()
+        )
+}
+
+export const fetchUsers = async (params) => {
+    if(params) {
+        return await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/v1/user`,
+            {
+                params: {
+                    ...params
+                },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`
+                }
+            },
+
+        )
     }
+
+    return await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/user`,
+        getAuthConfig()
+    )
+}
+
+export const fetchUserById = async ({id}) => {
+
+    return await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/user/${id}`,
+        getAuthConfig()
+    )
+}
+
+export const createUser = async ({firstName, lastName, email}) => {
+    return await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/v1/user`,
+        {
+            firstName,
+            lastName,
+            email
+        },
+        getAuthConfig()
+    )
+}
+
+export const updateUser = async (id, {passwordReset, role}) => {
+
+    const url = `${import.meta.env.VITE_API_URL}/api/v1/user/${id}`
+
+    return await axios.patch(
+        url,
+        {
+            passwordReset,
+            role
+        },
+        getAuthConfig()
+    )
+}
+
+export const deleteUser = async (id) => {
+    const url = `${import.meta.env.VITE_API_URL}/api/v1/user/${id}`
+
+    return await axios.delete(
+        url,
+        getAuthConfig()
+    )
+
 }
