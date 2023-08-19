@@ -1,5 +1,7 @@
-package com.tasky.api.dao;
+package com.tasky.api.dao.user;
 
+import com.tasky.api.dao.user.UserDao;
+import com.tasky.api.dao.user.UserDaoImpl;
 import com.tasky.api.models.User;
 import com.tasky.api.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;

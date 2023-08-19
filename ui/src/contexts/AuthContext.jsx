@@ -4,15 +4,7 @@ import {getMyProfile, login as performLogin} from "../utils/client.js";
 const AuthContext = createContext({})
 
 
-function parseJwt (token) {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
 
-    return JSON.parse(jsonPayload);
-}
 
 // eslint-disable-next-line react/prop-types
 
@@ -45,32 +37,18 @@ const AuthProvider = ({ children }) => {
         localStorage.removeItem("access_token")
     }
 
-    useEffect(() => {
+    const parseJwt = (token) => {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
 
-        if(isUserAuthenticated() && !user) {
-            const payload = parseJwt(localStorage.getItem("access_token"));
-            const date = Math.floor(Date.now() / 1000)
-
-            if(date < payload.exp) {
-                getMyProfile()
-                    .then( (res) => {
-                        setUser(res.data)
-                    })
-                    .catch((err) => {
-                        localStorage.removeItem("access_token")
-                    }).finally(() => {
-                        setAuthLoading(false);
-                })
-            } else {
-                localStorage.removeItem("access_token")
-                setAuthLoading(false);
-            }
-        }
-
-    })
+        return JSON.parse(jsonPayload);
+    }
 
     return (
-        <AuthContext.Provider value={{user,login,isUserAuthenticated,authLoading, logout}}>
+        <AuthContext.Provider value={{user,login,isUserAuthenticated,authLoading, logout, parseJwt, setAuthLoading, setUser}}>
             {children}
         </AuthContext.Provider>
     )

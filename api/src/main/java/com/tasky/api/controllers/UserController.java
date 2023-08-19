@@ -1,13 +1,12 @@
 package com.tasky.api.controllers;
 
 import com.tasky.api.dto.user.*;
-import com.tasky.api.services.UserService;
+import com.tasky.api.services.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 

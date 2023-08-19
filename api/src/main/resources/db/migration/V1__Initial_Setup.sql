@@ -46,7 +46,8 @@ create table if not exists feature (
   name text not null,
   description text,
   type text not null,
-  run_id bigint references run(id) not null,
+  run_id bigint references run(id),
+  project_id bigint references project(id),
   created_at timestamp default CURRENT_TIMESTAMP not null,
   updated_at timestamp default CURRENT_TIMESTAMP not null
 );
@@ -58,6 +59,7 @@ create table if not exists to_do(
     description text,
     status text default 'New' not null check( status in ('New','In progress','Done') ) ,
     feature_id bigint references feature(id) not null,
+    user_id bigint references user_account(id),
     created_at timestamp default CURRENT_TIMESTAMP not null,
     updated_at timestamp default CURRENT_TIMESTAMP not null
 );

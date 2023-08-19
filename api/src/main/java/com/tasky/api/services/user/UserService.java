@@ -1,4 +1,4 @@
-package com.tasky.api.services;
+package com.tasky.api.services.user;
 
 import com.tasky.api.dto.user.*;
 import org.springframework.lang.Nullable;

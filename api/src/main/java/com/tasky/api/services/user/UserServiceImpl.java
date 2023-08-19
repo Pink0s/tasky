@@ -1,10 +1,10 @@
-package com.tasky.api.services;
+package com.tasky.api.services.user;
 
 import com.github.javafaker.Faker;
 import com.tasky.api.configurations.errors.BadRequestException;
 import com.tasky.api.configurations.errors.DuplicationException;
 import com.tasky.api.configurations.errors.NotFoundException;
-import com.tasky.api.dao.UserDao;
+import com.tasky.api.dao.user.UserDao;
 import com.tasky.api.dto.PageableDto;
 import com.tasky.api.dto.user.*;
 import com.tasky.api.mappers.UserDtoMapper;
@@ -191,14 +191,14 @@ public class UserServiceImpl implements UserService {
             case "lastName" -> pageResult = userDao.selectAllUsersByLastName(pattern, pageable);
         }
 
-        if(pageResult.getTotalPages() <= page ) {
+        if(page != 0 && (pageResult.getTotalPages()-1) < page ) {
             stackTrace.add("Page requested does not exists");
             throw new BadRequestException(stackTrace.toString());
         }
 
         PageableDto pageableDto = new PageableDto(
                 page,
-                pageResult.getTotalPages()-1,
+                pageResult.getTotalPages()-1 > -1 ? pageResult.getTotalPages()-1 : 0,
                 pageResult.getTotalPages(),
                 pageResult.getNumberOfElements()
         );

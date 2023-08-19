@@ -1,6 +1,7 @@
 package com.tasky.api.journey;
 
 import com.tasky.api.AbstractTestContainer;
+import com.tasky.api.dto.project.CreateProjectRequest;
 import com.tasky.api.dto.user.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -21,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * These tests are performed within the context of a Spring Boot application.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class AdminJourneyIntegrationTest extends AbstractTestContainer {
+public class ApplicationJourneyIntegrationTest extends AbstractTestContainer {
 
     @Autowired
     private WebTestClient webTestClient;
@@ -31,6 +34,8 @@ public class AdminJourneyIntegrationTest extends AbstractTestContainer {
     private String adminPassword;
     @Value("#{'${server.default-admin-account}'}")
     private String adminAccount;
+
+    private static String token;
 
     /**
      * Tests the login journey for admin users.
@@ -56,7 +61,7 @@ public class AdminJourneyIntegrationTest extends AbstractTestContainer {
 
         UserAuthenticationRequest adminRegistrationRequest = new UserAuthenticationRequest(adminAccount,adminPassword);
 
-        String token = Objects.requireNonNull(webTestClient.post()
+        token = Objects.requireNonNull(webTestClient.post()
                         .uri(LOGIN_URI)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -164,5 +169,74 @@ public class AdminJourneyIntegrationTest extends AbstractTestContainer {
                 .expectBody()
                 .returnResult()
         ;
+    }
+
+
+    @Test
+    void projectManagerJourney() {
+
+        UserRegistrationRequest createNewUser = new UserRegistrationRequest("testus","testus","testuss@tasky.test");
+
+        UserRegistrationResponse userRegistrationResponse = webTestClient.post()
+                .uri("/api/v1/user")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", token))
+                .body(Mono.just(createNewUser), UserRegistrationRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated()
+                .expectBody(UserRegistrationResponse.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertNotNull(userRegistrationResponse);
+        Long id = userRegistrationResponse.userDto().id();
+
+        assertNotNull(id);
+
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest(false,"PROJECT_MANAGER");
+        UpdateUserResponse updateUserResponse = webTestClient
+                .patch()
+                .uri("/api/v1/user/"+id)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(updateUserRequest),UpdateUserRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(UpdateUserResponse.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertNotNull(updateUserResponse);
+
+        UserAuthenticationRequest ProjectManagerRegistrationRequest = new UserAuthenticationRequest(userRegistrationResponse.userDto().email(),userRegistrationResponse.password());
+
+        String tokenPM = Objects.requireNonNull(webTestClient.post()
+                        .uri(LOGIN_URI)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .body(Mono.just(ProjectManagerRegistrationRequest), UserAuthenticationRequest.class)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .returnResult(Void.class)
+                        .getResponseHeaders()
+                        .get(HttpHeaders.AUTHORIZATION))
+                .get(0);
+        assertFalse(tokenPM.isEmpty());
+
+        CreateProjectRequest createProjectRequest =  new CreateProjectRequest("name", Timestamp.from(Instant.now()),"desc");
+        webTestClient.post()
+                .uri("/api/v1/project")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", tokenPM))
+                .body(Mono.just(createProjectRequest), UserRegistrationRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
     }
 }

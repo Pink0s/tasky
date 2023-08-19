@@ -1,7 +1,8 @@
-package com.tasky.api.services;
+package com.tasky.api.services.user;
 
-import com.tasky.api.dao.UserDao;
+import com.tasky.api.dao.user.UserDao;
 import com.tasky.api.models.User;
+import com.tasky.api.services.user.UserDetailsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

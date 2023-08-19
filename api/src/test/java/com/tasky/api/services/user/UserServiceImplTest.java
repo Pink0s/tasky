@@ -1,12 +1,13 @@
-package com.tasky.api.services;
+package com.tasky.api.services.user;
 
 import com.tasky.api.configurations.errors.BadRequestException;
 import com.tasky.api.configurations.errors.DuplicationException;
 import com.tasky.api.configurations.errors.NotFoundException;
-import com.tasky.api.dao.UserDao;
+import com.tasky.api.dao.user.UserDao;
 import com.tasky.api.dto.user.*;
 import com.tasky.api.mappers.UserDtoMapper;
 import com.tasky.api.models.User;
+import com.tasky.api.services.user.UserServiceImpl;
 import com.tasky.api.utilities.JwtUtility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

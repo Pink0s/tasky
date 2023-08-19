@@ -1,6 +1,6 @@
-package com.tasky.api.services;
+package com.tasky.api.services.user;
 
-import com.tasky.api.dao.UserDao;
+import com.tasky.api.dao.user.UserDao;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

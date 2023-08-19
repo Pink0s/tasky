@@ -1,6 +1,6 @@
 package com.tasky.api.configurations.securities;
 
-import com.tasky.api.services.UserDetailsService;
+import com.tasky.api.services.user.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
