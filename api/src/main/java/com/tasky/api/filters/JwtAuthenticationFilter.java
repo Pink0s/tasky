@@ -1,6 +1,6 @@
 package com.tasky.api.filters;
 
-import com.tasky.api.services.UserDetailsService;
+import com.tasky.api.services.user.UserDetailsService;
 import com.tasky.api.utilities.JwtUtility;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
