@@ -3,15 +3,15 @@ package com.tasky.api.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a user account in the system.
@@ -54,12 +54,12 @@ public class User implements UserDetails {
     @OneToMany(orphanRemoval = true,mappedBy = "user")
     private Set<ToDo> toDos;
 
-    @ManyToMany
+    @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
             name = "user_account_project",
             joinColumns = @JoinColumn(name = "user_account_id"),
             inverseJoinColumns = @JoinColumn(name = "project_id"))
-    private Set<Project> projects;
+    private List<Project> projects =  new ArrayList<>();
     /**
      * Creates a user with the given parameters.
      *

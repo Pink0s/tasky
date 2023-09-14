@@ -5,8 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Set;
 
+/**
+ * Represents a ToDo.
+ */
 @Entity @Data @NoArgsConstructor
 public class ToDo {
     @SequenceGenerator(
@@ -31,4 +35,15 @@ public class ToDo {
     @OneToMany(orphanRemoval = true,mappedBy = "toDo")
     private Set<Comment> comments;
 
+    public ToDo(String name, String type, String description, Feature feature, User user) {
+        Timestamp timestamp = Timestamp.from(Instant.now());
+        this.name = name;
+        this.type = type;
+        this.description = description;
+        this.feature = feature;
+        this.user = user;
+        this.status = "New";
+        this.createdAt = timestamp;
+        this.updatedAt = timestamp;
+    }
 }

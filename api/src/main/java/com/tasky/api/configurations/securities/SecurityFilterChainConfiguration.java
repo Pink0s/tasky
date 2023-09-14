@@ -72,6 +72,32 @@ public class SecurityFilterChainConfiguration {
                              )
                              .requestMatchers("/api/v1/project/**")
                              .hasRole("PROJECT_MANAGER")
+                             .requestMatchers("/api/v1/comment/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers("/api/v1/feature/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers("/api/v1/toDo/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers(HttpMethod.GET,"/api/v1/run/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers("/api/v1/run/**")
+                             .hasRole("PROJECT_MANAGER")
                              .anyRequest()
                              .denyAll()
                 )

@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * Data Access Object Implementation (DAO) interface for managing Project entities.
+ */
 @Repository("PROJECT_JPA")
 public class ProjectDaoImpl implements ProjectDao {
 
@@ -19,7 +22,7 @@ public class ProjectDaoImpl implements ProjectDao {
     }
 
     /**
-     * @param project
+     * {@inheritDoc}
      */
     @Override
     public void insertProject(Project project) {
@@ -27,8 +30,7 @@ public class ProjectDaoImpl implements ProjectDao {
     }
 
     /**
-     * @param projectId
-     * @return
+     * {@inheritDoc}
      */
     @Override
     public Optional<Project> selectProjectById(Long projectId) {
@@ -36,9 +38,7 @@ public class ProjectDaoImpl implements ProjectDao {
     }
 
     /**
-     * @param name
-     * @param pageable
-     * @return
+     * {@inheritDoc}
      */
     @Override
     public Page<Project> selectAllProject(String name, Pageable pageable) {
@@ -46,10 +46,7 @@ public class ProjectDaoImpl implements ProjectDao {
     }
 
     /**
-     * @param name
-     * @param user
-     * @param pageable
-     * @return
+     * {@inheritDoc}
      */
     @Override
     public Page<Project> selectAllProjectForUser(String name, User user, Pageable pageable) {
@@ -57,8 +54,7 @@ public class ProjectDaoImpl implements ProjectDao {
     }
 
     /**
-     * @param id
-     * @return
+     * {@inheritDoc}
      */
     @Override
     public Boolean isProjectExistsWithId(Long id) {
@@ -66,7 +62,7 @@ public class ProjectDaoImpl implements ProjectDao {
     }
 
     /**
-     * @param id
+     * {@inheritDoc}
      */
     @Override
     public void deleteProjectById(Long id) {
@@ -74,7 +70,7 @@ public class ProjectDaoImpl implements ProjectDao {
     }
 
     /**
-     * @param project
+     * {@inheritDoc}
      */
     @Override
     public void updateProject(Project project) {

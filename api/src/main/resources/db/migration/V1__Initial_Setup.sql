@@ -15,6 +15,7 @@ create table if not exists project (
     name text not null,
     due_date timestamp not null,
     description text,
+    status text not null default 'New' CHECK ( project.status in ('New', 'In progress', 'Completed') ),
     created_by bigint references user_account(id) not null,
     created_at timestamp default CURRENT_TIMESTAMP not null,
     updated_at timestamp default CURRENT_TIMESTAMP not null
@@ -34,8 +35,7 @@ create table if not exists run (
     description text,
     start_date timestamp not null,
     end_date timestamp not null,
-    total_task integer default 0,
-    completed_task integer default 0,
+    status text not null default 'New' CHECK ( run.status in ('New', 'In progress', 'Completed') ),
     project_id bigint references project(id) not null,
     created_at timestamp default CURRENT_TIMESTAMP not null,
     updated_at timestamp default CURRENT_TIMESTAMP not null
@@ -45,9 +45,9 @@ create table if not exists feature (
   id bigserial primary key,
   name text not null,
   description text,
-  type text not null,
   run_id bigint references run(id),
   project_id bigint references project(id),
+  status text not null default 'New' CHECK ( feature.status in ('New', 'In progress', 'Completed') ),
   created_at timestamp default CURRENT_TIMESTAMP not null,
   updated_at timestamp default CURRENT_TIMESTAMP not null
 );
@@ -57,7 +57,7 @@ create table if not exists to_do(
     name text not null,
     type text not null check( type in ('task','bug') ),
     description text,
-    status text default 'New' not null check( status in ('New','In progress','Done') ) ,
+    status text default 'New' not null check( status in ('New','In progress','Completed') ) ,
     feature_id bigint references feature(id) not null,
     user_id bigint references user_account(id),
     created_at timestamp default CURRENT_TIMESTAMP not null,

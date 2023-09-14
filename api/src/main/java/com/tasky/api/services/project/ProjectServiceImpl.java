@@ -19,9 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.*;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -32,22 +33,27 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectDtoMapper projectDtoMapper;
 
-    public ProjectServiceImpl(@Qualifier("PROJECT_JPA") ProjectDao projectDao, ProjectDtoMapper projectDtoMapper, UserDao userDao) {
+    public ProjectServiceImpl(@Qualifier("PROJECT_JPA") ProjectDao projectDao, ProjectDtoMapper projectDtoMapper, @Qualifier("JPA") UserDao userDao) {
         this.projectDao = projectDao;
         this.projectDtoMapper = projectDtoMapper;
         this.userDao = userDao;
     }
 
     /**
-     * @param authentication
-     * @param request
+     * Creates a new project.
+     *
+     * @param authentication The authentication object representing the current authenticated user.
+     * @param request        The request containing the project details.
+     * @throws BadRequestException If the request is missing required fields.
      */
     @Override
     public void createProject(Authentication authentication, CreateProjectRequest request) {
-        User user = (User) authentication.getPrincipal();
+        User user = retriveAuthenticatedUser(authentication);
         List<String> errorStackTrace = new ArrayList<>();
+
         boolean isBadRequest = false;
         boolean withDescription = true;
+
         if(request == null) {
             String message = "Error Missing body";
             logger.error(message);
@@ -78,143 +84,128 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         Project project;
-
+        var date = Instant.ofEpochSecond(request.dueDate()).atZone(ZoneId.systemDefault()).toLocalDateTime();
         if(withDescription) {
+
             project = new Project(
                     request.name(),
-                    request.dueDate(),
+                    Timestamp.valueOf(date),
                     request.description(),
                     user
             );
         } else {
-            project = new Project(request.name(), request.dueDate(),user);
+
+            project = new Project(request.name(), Timestamp.valueOf(date), user);
         }
 
         projectDao.insertProject(project);
     }
 
     /**
-     * @param request
+     * Updates an existing project based on the provided update request.
+     *
+     * @param projectId The ID of the project to update.
+     * @param request   The update request containing the modified project details.
+     * @throws BadRequestException If no changes are found or if the status is not correct.
+     * @throws NotFoundException   If the project with the given ID is not found.
      */
     @Override
     public void updateProject(Long projectId, UpdateProjectRequest request) {
 
-        if(request == null || (request.description() == null && request.name() == null) ) {
-            throw new BadRequestException("Missing required fields");
-        }
 
-        if(projectId == null) {
-            throw new BadRequestException("Missing project id");
-        }
 
-        Project project = projectDao
-                .selectProjectById(
-                        projectId
-                ).orElseThrow(
-                        () -> new NotFoundException("Project with id "+projectId+" does not exists")
-                );
+        Project project = retrieveProject(projectId);
 
-        if(request.name() != null) {
+        boolean changes = false;
+
+        if(request.name() != null && !request.name().equals(project.getName())) {
             project.setName(request.name());
+            changes = true;
         }
 
-        if(request.description() != null) {
+        if(request.description() != null && !request.description().equals(project.getDescription())) {
             project.setDescription(request.description());
+            changes = true;
         }
 
+        if(request.status() != null) {
+            switch (request.status()) {
+                case "New", "Completed", "In progress" -> {
+                    if (!request.status().equals(project.getStatus())) {
+                        changes = true;
+                        project.setStatus(request.status());
+                    }
+                }
+                default -> throw new BadRequestException("Status is not correct");
+            }
+        }
+
+        if(request.DueDate() != null) {
+            var date = Instant.ofEpochSecond(request.DueDate()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+            Timestamp timestamp = Timestamp.valueOf(date);
+            if(!Objects.equals(project.getDueDate(), timestamp)) {
+                changes = true;
+                project.setDueDate(timestamp);
+            }
+        }
+
+        if(!changes){
+            throw new BadRequestException("No changes found");
+        }
+
+        project.setUpdatedAt(Timestamp.from(Instant.now()));
         projectDao.updateProject(project);
+
     }
 
     /**
-     * @param request
+     * Adds a user to a project.
+     *
+     * @param projectId The ID of the project to which the user is to be added.
+     * @param request   The request containing the user ID to add to the project.
+     * @throws BadRequestException If the request is missing required fields.
+     * @throws NotFoundException   If the project with the given ID or the user with the given ID is not found.
      */
     @Override
     public void addUser(Long projectId, AddUserToProjectRequest request) {
-
         if(request == null || request.userId() == null) {
             throw new BadRequestException("Missing required userId");
         }
 
-        if(projectId == null) {
-            throw new BadRequestException("Missing project id");
-        }
+        Project project = retrieveProject(projectId);
 
-        Project project = projectDao
-                .selectProjectById(
-                        projectId
-                ).orElseThrow(
-                        () -> new NotFoundException("Project with id "+projectId+" does not exists")
-                );
-
-        User user = userDao
-                .selectUserById(
-                        request.userId()
-                ).orElseThrow(
-                        () -> new NotFoundException("User with id "+request.userId()+" does not exists")
-                );
-
-        Set<User> users = project.getUsers();
-        users.add(user);
-        project.setUsers(users);
-
-        projectDao.updateProject(project);
-
+        User user = retrieveUser(request.userId());
+        List<Project> projects = user.getProjects();
+        projects.add(project);
+        user.setProjects(projects);
+        userDao.updateUser(user);
     }
 
     /**
-     * @param projectId
-     * @return
+     * Retrieves a project by its ID and ensures that the authenticated user has the right to access it.
+     *
+     * @param authentication The authentication object representing the current authenticated user.
+     * @param projectId      The ID of the project to retrieve.
+     * @return The ProjectDto object representing the retrieved project.
+     * @throws NotFoundException   If the project with the given ID is not found.
+     * @throws UnauthorizedException If the authenticated user is not authorized to access the project.
      */
     @Override
     public ProjectDto findProjectById(Authentication authentication, Long projectId) {
-
-        boolean isAuthorized = false;
-
-        //Retrieve authenticated user information
-        User user = (User) authentication.getPrincipal();
-
-        //check if project !exists throw 404
-        Project project = projectDao
-                .selectProjectById(projectId)
-                .orElseThrow(
-                        () -> new NotFoundException(
-                                "Project with id "+projectId+"does not exists."
-                        )
-                );
-
-        //check if users have PROJECT_MANAGER role or is in project else throw UNAUTHORIZED
-
-        if(user.getRole().equals("PROJECT_MANAGER")) {
-            isAuthorized = true;
-        } else {
-            project
-                    .getUsers()
-                    .stream()
-                    .filter(user1 ->
-                            user1
-                                    .getEmail()
-                                    .equals(
-                                            user.getEmail()
-                                    )
-                    )
-                    .findFirst()
-                    .orElseThrow(() -> new UnauthorizedException("You can't access to this resource"));
-        }
-
-        if(!isAuthorized) {
-            throw new UnauthorizedException("You can't access to this resource");
-        }
-
-        //return PROJECT DTO
-        projectDtoMapper.apply(project);
-
+        User user = retriveAuthenticatedUser(authentication);
+        Project project = retrieveProject(projectId);
+        checkRightToAccessToProject(user,project);
         return projectDtoMapper.apply(project);
     }
 
     /**
-     * @param pattern
-     * @param page
-     * @return
+     * Searches for projects based on the provided search pattern and pagination parameters.
+     *
+     * @param authentication The authentication object representing the current authenticated user.
+     * @param pattern        The search pattern for project names.
+     * @param page           The page number for pagination.
+     * @return A SearchProjectResponse containing a list of matching projects and pagination information.
+     * @throws BadRequestException If the requested page does not exist.
      */
     @Override
     public SearchProjectResponse findProject(Authentication authentication, String pattern, Integer page) {
@@ -223,7 +214,7 @@ public class ProjectServiceImpl implements ProjectService {
         String searchPattern = "";
         boolean isFullAccess = false;
 
-        User user = (User) authentication.getPrincipal();
+        User user = retriveAuthenticatedUser(authentication);
 
         if(user.getRole().equals("PROJECT_MANAGER")) {
             isFullAccess = true;
@@ -243,9 +234,14 @@ public class ProjectServiceImpl implements ProjectService {
 
             PageableDto pageableDto = new PageableDto(
                     currentPage,
-                    requestResult.getTotalPages()-1,
-                    requestResult.getTotalPages(),requestResult.getNumberOfElements()
+                    requestResult.getTotalPages()-1 > -1 ? requestResult.getTotalPages()-1 : 0,
+                    requestResult.getTotalPages(),
+                    requestResult.getNumberOfElements()
             );
+
+            if(currentPage != 0 && (requestResult.getTotalPages()-1) < page) {
+                throw new BadRequestException("Page requested does not exists");
+            }
 
             List<ProjectDto> projects = requestResult
                     .getContent()
@@ -276,19 +272,66 @@ public class ProjectServiceImpl implements ProjectService {
                 requestResult.getNumberOfElements()
         );
 
+        if(currentPage != 0 && (requestResult.getTotalPages()-1) < page) {
+            throw new BadRequestException("Page requested does not exists");
+        }
+
         return new SearchProjectResponse(projects,pageableDto);
     }
 
     /**
-     * @param projectId
+     * Deletes a project based on its ID.
+     *
+     * @param projectId The ID of the project to delete.
+     * @throws NotFoundException If the project with the given ID is not found.
      */
     @Override
     public void deleteProjectById(Long projectId) {
 
         if(!projectDao.isProjectExistsWithId(projectId)) {
+
             throw new NotFoundException("Project with id "+projectId+" does not exists");
         }
 
         projectDao.deleteProjectById(projectId);
+    }
+
+    private User retriveAuthenticatedUser(Authentication authentication) {
+        return (User) authentication.getPrincipal();
+    }
+
+    private Project retrieveProject(Long projectId) {
+        return projectDao
+                .selectProjectById(
+                        projectId
+                ).orElseThrow(
+                        () -> new NotFoundException("Project with id "+projectId+" does not exists")
+                );
+    }
+
+    private User retrieveUser(Long userId) {
+        return userDao
+                .selectUserById(
+                        userId
+                ).orElseThrow(
+                        () -> new NotFoundException("User with id "+userId+" does not exists")
+                );
+    }
+
+    private void checkRightToAccessToProject(User user, Project project) {
+        boolean isAuthorized = user.getRole().equals("PROJECT_MANAGER");
+        if(!isAuthorized) {
+            project.getUsers()
+                    .stream()
+                    .filter(
+                            actualUser -> actualUser
+                                    .getId()
+                                    .equals(
+                                            user.getId()
+                                    )
+                    ).findFirst()
+                    .orElseThrow(() -> new UnauthorizedException("You can't access to this resource"));
+        }
+
     }
 }

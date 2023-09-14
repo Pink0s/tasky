@@ -1,7 +1,17 @@
 package com.tasky.api.journey;
 
 import com.tasky.api.AbstractTestContainer;
+import com.tasky.api.dto.comment.CreateCommentRequest;
+import com.tasky.api.dto.comment.UpdateCommentRequest;
+import com.tasky.api.dto.feature.CreateFeatureRequest;
+import com.tasky.api.dto.feature.UpdateFeatureRequest;
+import com.tasky.api.dto.project.AddUserToProjectRequest;
 import com.tasky.api.dto.project.CreateProjectRequest;
+import com.tasky.api.dto.project.UpdateProjectRequest;
+import com.tasky.api.dto.run.CreateRunRequest;
+import com.tasky.api.dto.run.UpdateRunRequest;
+import com.tasky.api.dto.toDo.CreateToDoRequest;
+import com.tasky.api.dto.toDo.UpdateTodoRequest;
 import com.tasky.api.dto.user.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,7 +238,7 @@ public class ApplicationJourneyIntegrationTest extends AbstractTestContainer {
                 .get(0);
         assertFalse(tokenPM.isEmpty());
 
-        CreateProjectRequest createProjectRequest =  new CreateProjectRequest("name", Timestamp.from(Instant.now()),"desc");
+        CreateProjectRequest createProjectRequest =  new CreateProjectRequest("name", 1692881836L,"desc");
         webTestClient.post()
                 .uri("/api/v1/project")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -238,5 +248,512 @@ public class ApplicationJourneyIntegrationTest extends AbstractTestContainer {
                 .exchange()
                 .expectStatus()
                 .isCreated();
+
+        webTestClient.post()
+                .uri("/api/v1/project")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", tokenPM))
+                .body(Mono.just(createProjectRequest), UserRegistrationRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        UpdateProjectRequest updateProjectRequest = new UpdateProjectRequest("test","desc","In progress",null);
+        webTestClient
+                .patch()
+                .uri("/api/v1/project/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s", tokenPM))
+                .body(Mono.just(updateProjectRequest),UpdateProjectRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/project/1")
+                .accept(
+                        MediaType.APPLICATION_JSON
+                )
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/project")
+                .accept(
+                        MediaType.APPLICATION_JSON
+                )
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .delete()
+                .uri("/api/v1/project/2")
+                .accept(
+                        MediaType.APPLICATION_JSON
+                )
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+
+        AddUserToProjectRequest request = new AddUserToProjectRequest(1L);
+        webTestClient
+                .patch()
+                .uri("/api/v1/project/1/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(request),AddUserToProjectRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        CreateRunRequest createRunRequest = new CreateRunRequest("name","description",1692881822L,1692881836L);
+
+        webTestClient
+                .post()
+                .uri("/api/v1/run/project/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(createRunRequest),CreateRunRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        CreateRunRequest createRunRequest2 = new CreateRunRequest("name2","description",1692881822L,1692881836L);
+
+        webTestClient
+                .post()
+                .uri("/api/v1/run/project/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(createRunRequest2),CreateRunRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/run/2")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/run/project/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        UpdateRunRequest updateRunRequest = new UpdateRunRequest(null,null,null,null,"In progress");
+        webTestClient
+                .patch()
+                .uri("/api/v1/run/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(updateRunRequest),UpdateRunRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .delete()
+                .uri("/api/v1/run/2")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+
+        CreateFeatureRequest createFeatureRequest = new CreateFeatureRequest("name","descr");
+        webTestClient
+                .post()
+                .uri("/api/v1/feature/run/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(createFeatureRequest),CreateFeatureRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        CreateFeatureRequest createFeatureRequest2 = new CreateFeatureRequest("name","descr");
+        webTestClient
+                .post()
+                .uri("/api/v1/feature/run/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(createFeatureRequest2),CreateFeatureRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        webTestClient
+                .get()
+                .uri("api/v1/feature/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .get()
+                .uri("api/v1/feature/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .get()
+                .uri("api/v1/feature/run/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        UpdateFeatureRequest updateFeatureRequest = new UpdateFeatureRequest(null,null,"In progress");
+        webTestClient
+                .patch()
+                .uri("api/v1/feature/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(updateFeatureRequest), UpdateFeatureRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .delete()
+                .uri("api/v1/feature/2")
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+
+        CreateToDoRequest createToDoRequest = new CreateToDoRequest("name","task","descr");
+
+        webTestClient
+                .post()
+                .uri("/api/v1/toDo/feature/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(createToDoRequest),CreateToDoRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        CreateToDoRequest createToDoRequest2 = new CreateToDoRequest("name","task","descr");
+
+        webTestClient
+                .post()
+                .uri("/api/v1/toDo/feature/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(createToDoRequest2),CreateToDoRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/toDo/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/toDo/profile")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/toDo/feature/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        UpdateTodoRequest updateTodoRequest = new UpdateTodoRequest(null,null,null,null,"In progress");
+        webTestClient
+                .patch()
+                .uri("/api/v1/toDo/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(updateTodoRequest),UpdateTodoRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .delete()
+                .uri("/api/v1/toDo/2")
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+
+        CreateCommentRequest createCommentRequest = new CreateCommentRequest("name","content");
+
+        webTestClient
+                .post()
+                .uri("/api/v1/comment/toDo/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(createCommentRequest),CreateCommentRequest.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/comment/1")
+
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .get()
+                .uri("/api/v1/comment/toDo/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        UpdateCommentRequest updateCommentRequest = new UpdateCommentRequest("namee","zaereazrae");
+
+        webTestClient
+                .patch()
+                .uri("/api/v1/comment/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .body(Mono.just(updateCommentRequest),UpdateCommentRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        webTestClient
+                .delete()
+                .uri("/api/v1/comment/1")
+                .header(
+                        HttpHeaders
+                                .AUTHORIZATION
+                        ,String.format(
+                                "Bearer %s", tokenPM
+                        )
+                )
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+
+
     }
+
+
 }

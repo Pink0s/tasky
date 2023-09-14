@@ -94,24 +94,8 @@ public class UserController {
      */
     @GetMapping
     public SearchUsersResponse getUsers(@RequestParam(required = false) String type, @RequestParam(required = false) String pattern,  @RequestParam(required = false) Integer page) {
-
-        String requestType = null;
-        String requestPattern = null;
-        Integer requestPage = null;
-
-        //String type, String pattern, Integer page
-        if(type != null) {
-            requestType = type;
-        }
-
-        if(pattern != null) {
-            requestPattern = pattern;
-        }
-        if(page != null) {
-            requestPage = page;
-        }
         logger.info("GET /api/v1/user");
-        return userService.searchUsers(new SearchUsersRequest(requestType,requestPattern,requestPage));
+        return userService.searchUsers(new SearchUsersRequest(type,pattern,page));
     }
 
     /**
