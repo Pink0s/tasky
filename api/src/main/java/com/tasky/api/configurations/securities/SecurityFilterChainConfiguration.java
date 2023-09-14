@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authorization.AuthorityAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -61,6 +64,40 @@ public class SecurityFilterChainConfiguration {
                              .permitAll()
                              .requestMatchers("/api/v1/user/**")
                              .hasRole("ADMIN")
+                             .requestMatchers(HttpMethod.GET,"/api/v1/project/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers("/api/v1/project/**")
+                             .hasRole("PROJECT_MANAGER")
+                             .requestMatchers("/api/v1/comment/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers("/api/v1/feature/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers("/api/v1/toDo/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers(HttpMethod.GET,"/api/v1/run/**")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER")
+                                     )
+                             )
+                             .requestMatchers("/api/v1/run/**")
+                             .hasRole("PROJECT_MANAGER")
                              .anyRequest()
                              .denyAll()
                 )

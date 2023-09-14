@@ -1,13 +1,12 @@
 package com.tasky.api.controllers;
 
 import com.tasky.api.dto.user.*;
-import com.tasky.api.services.UserService;
+import com.tasky.api.services.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,24 +94,8 @@ public class UserController {
      */
     @GetMapping
     public SearchUsersResponse getUsers(@RequestParam(required = false) String type, @RequestParam(required = false) String pattern,  @RequestParam(required = false) Integer page) {
-
-        String requestType = null;
-        String requestPattern = null;
-        Integer requestPage = null;
-
-        //String type, String pattern, Integer page
-        if(type != null) {
-            requestType = type;
-        }
-
-        if(pattern != null) {
-            requestPattern = pattern;
-        }
-        if(page != null) {
-            requestPage = page;
-        }
         logger.info("GET /api/v1/user");
-        return userService.searchUsers(new SearchUsersRequest(requestType,requestPattern,requestPage));
+        return userService.searchUsers(new SearchUsersRequest(type,pattern,page));
     }
 
     /**

@@ -3,12 +3,15 @@ package com.tasky.api.mappers;
 import com.tasky.api.dto.user.UserDto;
 import com.tasky.api.models.User;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for the {@link UserDtoMapper} class.
  */
+@ExtendWith(MockitoExtension.class)
 class UserDtoMapperTest {
 
     /**

@@ -23,26 +23,6 @@ public class ApiExceptionHandler {
 
     private final Logger logger = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
-    /**
-     * Handles ApiRequestException and returns an appropriate response.
-     */
-    @ExceptionHandler(value = ApiRequestException.class)
-    public ResponseEntity<Object> handleApiRequestException(
-            ApiRequestException e,
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) {
-
-        ApiException apiException = new ApiException(
-                e.getMessage(),
-                HttpStatus.BAD_REQUEST,
-                ZonedDateTime.now()
-        );
-        logger.error(apiException.toString());
-        return new ResponseEntity<>(
-                apiException,
-                HttpStatus.BAD_REQUEST);
-    }
 
     /**
      * Handles InsufficientAuthenticationException and returns an appropriate response.
@@ -63,6 +43,25 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(
                 apiException,
                 HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(value = UnauthorizedException.class)
+    public ResponseEntity<Object> handleApiRequestException(
+            UnauthorizedException e,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+
+        ApiException apiException = new ApiException(
+                e.getMessage(),
+                HttpStatus.UNAUTHORIZED,
+                ZonedDateTime.now()
+        );
+        logger.error(apiException.toString());
+        return new ResponseEntity<>(
+                apiException,
+                HttpStatus.UNAUTHORIZED
+        );
     }
 
     /**
