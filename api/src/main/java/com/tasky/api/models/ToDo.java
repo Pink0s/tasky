@@ -32,7 +32,7 @@ public class ToDo {
     @ManyToOne @JoinColumn(name ="user_id") private User user;
     @Column(nullable = false) Timestamp createdAt;
     @Column(nullable = false) Timestamp updatedAt;
-    @OneToMany(orphanRemoval = true,mappedBy = "toDo")
+    @OneToMany(mappedBy = "toDo", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<Comment> comments;
 
     public ToDo(String name, String type, String description, Feature feature, User user) {

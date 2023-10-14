@@ -110,7 +110,7 @@ public class FeatureServiceImpl implements FeatureService {
             pattern = name;
         }
 
-        Pageable pageable = PageRequest.of(currentPage,5);
+        Pageable pageable = PageRequest.of(currentPage,6);
 
         Page<Feature> pageResult = featureDao.findAllFeatureWhereRunIsAndNameContaining(run,pattern,pageable);
 

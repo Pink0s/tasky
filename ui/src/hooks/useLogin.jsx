@@ -12,7 +12,6 @@ export function useLogin() {
     const [isVisible, setIsVisible] = useState(true);
 
     const handleClose = () => {
-        console.log("here")
         setIsVisible(false);
         setError(false);
     };

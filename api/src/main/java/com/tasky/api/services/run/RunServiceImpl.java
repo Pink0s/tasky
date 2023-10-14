@@ -131,7 +131,7 @@ public class RunServiceImpl implements RunService {
             pattern = name;
         }
 
-        Pageable pageable = PageRequest.of(currentPage,5);
+        Pageable pageable = PageRequest.of(currentPage,6);
         Page<Run> runPage = runDao.findAllRunWhereProjectIsAndNameContaining(project,pattern,pageable);
 
         if(currentPage != 0 && (runPage.getTotalPages()-1) < page) {

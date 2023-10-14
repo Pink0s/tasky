@@ -4,13 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,10 +38,10 @@ public class Project {
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "projects")
     private List<User> users =  new ArrayList<>();
 
-    @OneToMany(orphanRemoval = true,mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<Run> runs;
 
-    @OneToMany(orphanRemoval = true,mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<Feature> features;
 
     public Project(String name, Timestamp dueDate, String description, User user) {

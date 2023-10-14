@@ -3,8 +3,6 @@ package com.tasky.api.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,10 +46,10 @@ public class User implements UserDetails {
     @Column(nullable = false) private Timestamp createdAt;
     @Column(nullable = false) private Timestamp updatedAt;
 
-    @OneToMany(orphanRemoval = true,mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<Project> createdProjectSet;
 
-    @OneToMany(orphanRemoval = true,mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<ToDo> toDos;
 
     @ManyToMany(cascade=CascadeType.ALL)

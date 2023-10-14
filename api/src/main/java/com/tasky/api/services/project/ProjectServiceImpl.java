@@ -140,8 +140,8 @@ public class ProjectServiceImpl implements ProjectService {
             }
         }
 
-        if(request.DueDate() != null) {
-            var date = Instant.ofEpochSecond(request.DueDate()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+        if(request.dueDate() != null) {
+            var date = Instant.ofEpochSecond(request.dueDate()).atZone(ZoneId.systemDefault()).toLocalDateTime();
             Timestamp timestamp = Timestamp.valueOf(date);
             if(!Objects.equals(project.getDueDate(), timestamp)) {
                 changes = true;

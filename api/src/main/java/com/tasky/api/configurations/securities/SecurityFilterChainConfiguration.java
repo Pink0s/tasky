@@ -7,9 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
-import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManagers;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -56,12 +54,17 @@ public class SecurityFilterChainConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) ->
                      authorize
-
                              .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
                              .permitAll()
                              .requestMatchers(HttpMethod.GET,"/actuator/health").permitAll()
                              .requestMatchers(HttpMethod.POST,"/api/v1/user/auth")
                              .permitAll()
+                             .requestMatchers(HttpMethod.GET,"/api/v1/user/profile")
+                             .access(
+                                     AuthorizationManagers.allOf(
+                                             AuthorityAuthorizationManager.hasAnyRole("USER","PROJECT_MANAGER","ADMIN")
+                                     )
+                             )
                              .requestMatchers("/api/v1/user/**")
                              .hasRole("ADMIN")
                              .requestMatchers(HttpMethod.GET,"/api/v1/project/**")

@@ -136,7 +136,7 @@ public class TodoServiceImpl implements TodoService {
             pattern = name;
         }
 
-        Pageable pageable = PageRequest.of(currentPage,5);
+        Pageable pageable = PageRequest.of(currentPage,6);
 
         Page<ToDo> resultPage = toDoDao.selectAllToDoWhereFeatureIdIsAndNameContaining(feature,pattern,pageable);
 
@@ -173,7 +173,7 @@ public class TodoServiceImpl implements TodoService {
             pattern = name;
         }
 
-        Pageable pageable = PageRequest.of(currentPage,5);
+        Pageable pageable = PageRequest.of(currentPage,6);
         Page<ToDo> resultPage = toDoDao.selectToDosWhereUserIsAndNameContaining(user,pattern,pageable);
 
         if(currentPage != 0 && (resultPage.getTotalPages()-1) < page) {
