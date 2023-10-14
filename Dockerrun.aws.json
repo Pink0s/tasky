@@ -3,7 +3,7 @@
   "containerDefinitions": [
     {
       "name": "tasky-api",
-      "image": "943819035698.dkr.ecr.eu-west-3.amazonaws.com/tasky-api:14.09.2023.09.31.08",
+      "image": "943819035698.dkr.ecr.eu-west-3.amazonaws.com/tasky-api:14.10.2023.19.18.34",
       "essential": true,
       "memory": 512,
       "portMappings": [
