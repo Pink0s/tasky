@@ -3,14 +3,39 @@ import SideBar from "../DashBoard/SideBar.jsx";
 import {useAuth} from "../../contexts/AuthContext.jsx";
 import {useFormik} from "formik";
 import * as Yup from 'yup';
-import {changePassword} from "../../utils/client.js";
+import {changePassword, getMyProfile} from "../../utils/client.js";
 import ErrorNotification from "../../components/ErrorNotification.jsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 export default function Profile() {
 
-    const {user, authLoading} = useAuth();
+
     const [notify, setNotify] = useState(null);
     const [isVisible, setIsVisible] = useState(true);
+    const {user, authLoading,isUserAuthenticated, parseJwt, setAuthLoading, setUser} = useAuth();
+
+    useEffect(() => {
+
+        if(isUserAuthenticated()) {
+            const payload = parseJwt(localStorage.getItem("access_token"));
+            const date = Math.floor(Date.now() / 1000)
+
+            if(date < payload.exp) {
+                getMyProfile()
+                    .then( (res) => {
+                        setUser(res.data)
+                    })
+                    .catch((err) => {
+                        localStorage.removeItem("access_token")
+                    }).finally(() => {
+                    setAuthLoading(false);
+                })
+            } else {
+                localStorage.removeItem("access_token")
+                setAuthLoading(false);
+            }
+        }
+
+    },[])
 
     const handleClose = () => {
         setIsVisible(false);
@@ -66,6 +91,10 @@ export default function Profile() {
                 </div>
                 <div className="mt-6 border-t border-gray-100">
                     <dl className="divide-y divide-gray-100">
+                        <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                            <dt className="text-sm font-medium leading-6 text-gray-900">User id</dt>
+                            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{user.id}</dd>
+                        </div>
                         <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                             <dt className="text-sm font-medium leading-6 text-gray-900">Full name</dt>
                             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{user.firstName +" "+user.lastName}</dd>

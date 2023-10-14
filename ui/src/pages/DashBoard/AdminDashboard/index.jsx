@@ -20,6 +20,7 @@ const AdminDashboard = () => {
     const [searchInput, setSearchInput] = useState("")
     const [criteria, setCriteria] = useState("email")
     const [page,setPage] = useState(0)
+    const [clear, setClear] = useState(false)
     const handleChange = (e) => {
         e.preventDefault();
         setSearchInput(e.target.value);
@@ -28,7 +29,6 @@ const AdminDashboard = () => {
 
     const onChange = (event) => {
         const value = event.target.value;
-        console.log(value)
         setCriteria(value);
     };
 
@@ -51,7 +51,7 @@ const AdminDashboard = () => {
                     })
             }, 500)
             return () => clearTimeout(timeOut)
-        }
+        } else setClear(true)
 
     },[searchInput,page])
 
@@ -62,6 +62,7 @@ const AdminDashboard = () => {
 
         fetchUsers({page:page})
             .then((res) => {
+                setClear(false)
                 setUsers(res.data.users)
 
                 setPageable(res.data.pageableDto)
@@ -72,7 +73,7 @@ const AdminDashboard = () => {
                 setLoader(false)
             })
 
-    },[showCreateForm,showUpdateForm,page])
+    },[showCreateForm,showUpdateForm,page, clear])
 
     if(loader) {
         return (

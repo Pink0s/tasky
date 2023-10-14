@@ -1,9 +1,7 @@
+import ProjectDashboard from "../ProjectDashboard.jsx";
+
 const UserDashboard = () => {
-    return (
-        <div>
-            UserDashboard
-        </div>
-    )
+    return <ProjectDashboard title="User Dashboard"/>
 }
 
 export default UserDashboard
