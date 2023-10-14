@@ -30,7 +30,7 @@ public class Feature {
     @Column(nullable = false) private Timestamp updatedAt;
     @ManyToOne @JoinColumn(name ="run_id") private Run run;
     @ManyToOne @JoinColumn(name ="project_id",nullable = false) private Project project;
-    @OneToMany(orphanRemoval = true,mappedBy = "feature")
+    @OneToMany(mappedBy = "feature", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<ToDo> toDos;
 
     public Feature(String name, String description, Project project) {

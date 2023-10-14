@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Set;
@@ -32,7 +31,7 @@ public class Run {
     @ManyToOne @JoinColumn(name ="project_id",nullable = false) private Project project;
     @Column(nullable = false) private Timestamp createdAt;
     @Column(nullable = false) private Timestamp updatedAt;
-    @OneToMany(orphanRemoval = true,mappedBy = "run")
+    @OneToMany(mappedBy = "run" , cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<Feature> features;
 
     public Run(String name, String description, Timestamp startDate, Timestamp endDate, Project project) {
