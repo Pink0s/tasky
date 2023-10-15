@@ -93,10 +93,11 @@ const Feature = () => {
                     <a href={`/project/${params.projectId}`} className="text-blue-500 hover:underline">Project</a> / <a href={`/project/${params.projectId}/run/${params.runId}`} className="text-blue-500 hover:underline">Run</a>
                 </p>
 
-                {user.role === "PROJECT_MANAGER" && <>
+                
                     <h3 className="pt-4 text-base font-semibold leading-7 text-gray-900">Action Panel</h3>
                             
                     <div className=" flex flex-row gap-2 mt-4 sm:ml-2 sm:mt-0 sm:flex-none">
+                    {user.role === "PROJECT_MANAGER" && <>
                         <button
                             type="button"
                             className="block rounded-md bg-red-800 px-3 py-2 text-center text-sm font-semibold text-secondaryButton shadow-sm hover:bg-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaryButton"
@@ -109,6 +110,7 @@ const Feature = () => {
                         >
                             Delete Feature
                         </button>
+                    
                         <button
                             type="button"
                             className="block rounded-md bg-primaryButton px-3 py-2 text-center text-sm font-semibold text-secondaryButton shadow-sm hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaryButton"
@@ -118,6 +120,8 @@ const Feature = () => {
                         >
                             Update Feature
                         </button>
+                        </>
+                    }
                         <button
                             type="button"
                             className="block rounded-md bg-primaryButton px-3 py-2 text-center text-sm font-semibold text-secondaryButton shadow-sm hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaryButton"
@@ -127,8 +131,9 @@ const Feature = () => {
                         >
                             Add a task
                         </button>
+                        
                     </div>
-                </>}
+                
                 
             </div>
         </div>
